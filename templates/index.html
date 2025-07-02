@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}WHOIS Lookup - Home{% endblock %}
+
+{% block content %}
+    <h1 class="page-title">Domain WHOIS Lookup</h1>
+
+    <div class="search-section">
+        <form method="POST" action="/">
+            <input type="text" name="domain" placeholder="Enter domain name (e.g., example.com)" value="{{ domain_searched if domain_searched else '' }}" required>
+            <button type="submit">Lookup Domain</button>
+        </form>
+    </div>
+
+    {% if whois_info %}
+        <div class="result-section">
+            <h2 class="result-title">WHOIS Information for <span>{{ domain_searched }}</span></h2>
+            <div class="whois-result">
+                <pre>{{ whois_info }}</pre>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="history-section">
+        <h2 class="history-title">Recent Lookups</h2>
+        {% if historical_records %}
+            <ul class="history-list">
+                {% for record in historical_records %}
+                    <li>
+                        <strong><a href="/?domain={{ record.domain_name }}">{{ record.domain_name }}</a></strong>
+                        <span class="history-meta">
+                            (Last updated: {{ record.last_updated.strftime('%Y-%m-%d %H:%M:%S') }})
+                            {% if record.registrar %}<br>Registrar: {{ record.registrar }}{% endif %}
+                            {% if record.expiration_date %}<br>Expires: {{ record.expiration_date }}{% endif %}
+                        </span>
+                        <a href="/api/whois/{{ record.domain_name }}" target="_blank" class="api-link">View API</a>
+                    </li>
+                {% endfor %}
+            </ul>
+            {# NEW: Clear History Button #}
+            <form action="{{ url_for('clear_history') }}" method="post" class="clear-history-form">
+                <button type="submit" class="clear-history-button" onclick="return confirm('Are you sure you want to clear all historical lookups? This action cannot be undone.');">Clear All Lookups</button>
+            </form>
+        {% else %}
+            <p>No recent lookups yet.</p>
+        {% endif %}
+    </div>
+{% endblock %}
